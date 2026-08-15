@@ -9,8 +9,8 @@ export function DatabaseStatus() {
     const checkConnection = async () => {
       try {
         const apiUrl = window.location.hostname === 'localhost'
-          ? 'http://localhost:9001/api/clientes'
-          : `http://${window.location.hostname}:9001/api/clientes`;
+          ? '/api/clientes'
+          : `/api/clientes`;
         const response = await fetch(apiUrl);
         setIsOnline(response.ok);
       } catch (error) {

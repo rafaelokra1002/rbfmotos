@@ -1,20 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Cliente, Moto, Servico, Peca, Orcamento, OrdemServico } from '../types';
-
-// Detecta se está acessando via IP externo ou localhost
-const getApiUrl = () => {
-  const hostname = window.location.hostname;
-  // Se estiver acessando via IP (não localhost/127.0.0.1), use o mesmo IP para a API
-  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-    const apiUrl = `http://${hostname}:9001/api`;
-    console.log('🌐 API URL (externo):', apiUrl);
-    return apiUrl;
-  }
-  console.log('🏠 API URL (local):', 'http://localhost:9001/api');
-  return 'http://localhost:9001/api';
-};
-
-const API_URL = getApiUrl();
+import { API_URL } from '../lib/api';
 
 // Timeout para requisições (10 segundos)
 const FETCH_TIMEOUT = 10000;

@@ -37,8 +37,8 @@ export function Dashboard({ onNavigateToOrdens }: DashboardProps) {
     const buscarMensagensNaoLidas = async () => {
       try {
         const API_URL = window.location.hostname === 'localhost' 
-          ? 'http://localhost:9001/api'
-          : `http://${window.location.hostname}:9001/api`;
+          ? '/api'
+          : `/api`;
 
         // Buscar todas as ordens ativas
         const ordensAtivas = ordens.filter(o => 

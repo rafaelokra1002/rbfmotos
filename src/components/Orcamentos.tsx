@@ -129,8 +129,8 @@ export function Orcamentos() {
 
       // Registrar no caixa
       const API_URL = window.location.hostname === 'localhost' 
-        ? 'http://localhost:9001/api'
-        : `http://${window.location.hostname}:9001/api`;
+        ? '/api'
+        : `/api`;
 
       await fetch(`${API_URL}/caixa`, {
         method: 'POST',

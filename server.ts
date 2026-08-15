@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { prisma } from './src/lib/prisma';
 import botWhatsAppRouter from './src/api/bot-whatsapp';
 
@@ -1601,9 +1602,23 @@ app.delete('/api/financeiro/metas/:id', async (req, res) => {
 
 // ================= FIM FINANCEIRO =================
 
+// ================= FRONTEND (SPA) =================
+// Em produção, o Express serve o build do Vite (pasta dist) e faz o
+// fallback para o index.html em qualquer rota que não seja da API.
+// Middleware sem padrão de rota para ser compatível com Express 5.
+const distPath = path.join(process.cwd(), 'dist');
+app.use(express.static(distPath));
+app.use((req, res, next) => {
+  if (req.method !== 'GET') return next();
+  if (req.path.startsWith('/api')) return next();
+  res.sendFile(path.join(distPath, 'index.html'), (err) => {
+    if (err) next();
+  });
+});
+
 app.listen(port, '0.0.0.0', () => {
-  console.log(`API rodando em http://localhost:${port}`);
-  console.log(`API acessível externamente em http://<seu-ip>:${port}`);
+  console.log(`Servidor rodando em http://localhost:${port}`);
+  console.log(`Frontend + API na mesma porta (${port})`);
 });
 /*
 CÓDIGO ÓRFÃO REMOVIDO - Webhook duplicado estava causando erros de compilação

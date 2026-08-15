@@ -130,8 +130,8 @@ export function Caixa({}: CaixaProps) {
   const carregarPecasServicos = async () => {
     try {
       const [resPecas, resServicos] = await Promise.all([
-        fetch('http://177.54.148.12:9001/api/pecas'),
-        fetch('http://177.54.148.12:9001/api/servicos')
+        fetch('/api/pecas'),
+        fetch('/api/servicos')
       ]);
       if (resPecas.ok) {
         const dataPecas = await resPecas.json();
@@ -148,7 +148,7 @@ export function Caixa({}: CaixaProps) {
 
   const carregarMovimentacoes = async () => {
     try {
-      const response = await fetch('http://177.54.148.12:9001/api/caixa');
+      const response = await fetch('/api/caixa');
       if (response.ok) {
         const data = await response.json();
         setMovimentacoes(data);
@@ -160,7 +160,7 @@ export function Caixa({}: CaixaProps) {
 
   const carregarOrdensAbertas = async () => {
     try {
-      const response = await fetch('http://177.54.148.12:9001/api/ordens-servico');
+      const response = await fetch('/api/ordens-servico');
       if (response.ok) {
         const data = await response.json();
         setTodasOrdens(data); // Guardar todas as ordens
@@ -183,8 +183,8 @@ export function Caixa({}: CaixaProps) {
       };
 
       const url = editando 
-        ? `http://177.54.148.12:9001/api/caixa/${editando.id}`
-        : 'http://177.54.148.12:9001/api/caixa';
+        ? `/api/caixa/${editando.id}`
+        : '/api/caixa';
 
       const response = await fetch(url, {
         method: editando ? 'PUT' : 'POST',
@@ -206,7 +206,7 @@ export function Caixa({}: CaixaProps) {
     if (!confirm('Tem certeza que deseja excluir esta movimentação?')) return;
 
     try {
-      const response = await fetch(`http://177.54.148.12:9001/api/caixa/${id}`, {
+      const response = await fetch(`/api/caixa/${id}`, {
         method: 'DELETE'
       });
 
@@ -276,14 +276,14 @@ export function Caixa({}: CaixaProps) {
           if (pecaAtual && pecaAtual.estoque !== undefined) {
             const novoEstoque = Math.max(0, pecaAtual.estoque - itemVenda.quantidade);
             // Atualizar estoque
-            await fetch(`http://177.54.148.12:9001/api/pecas/${pecaId}`, {
+            await fetch(`/api/pecas/${pecaId}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ estoque: novoEstoque })
             });
 
             // Adicionar à lista de pedidos para reposição
-            await fetch('http://177.54.148.12:9001/api/pedidos', {
+            await fetch('/api/pedidos', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -300,7 +300,7 @@ export function Caixa({}: CaixaProps) {
           }
         } else if (itemVenda.tipo === 'peca') {
           // Peça avulsa (não cadastrada) - adicionar à lista de pedidos
-          await fetch('http://177.54.148.12:9001/api/pedidos', {
+          await fetch('/api/pedidos', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -319,7 +319,7 @@ export function Caixa({}: CaixaProps) {
       // Adicionar itens avulsos à lista de pedidos também
       const itensAvulsos = itensVenda.filter(item => item.tipo === 'avulso');
       for (const itemAvulso of itensAvulsos) {
-        await fetch('http://177.54.148.12:9001/api/pedidos', {
+        await fetch('/api/pedidos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -345,7 +345,7 @@ export function Caixa({}: CaixaProps) {
         observacoes: vendaAvulsa.observacoes || 'Venda avulsa (sem OS)'
       };
 
-      const response = await fetch('http://177.54.148.12:9001/api/caixa', {
+      const response = await fetch('/api/caixa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dados)
@@ -372,7 +372,7 @@ export function Caixa({}: CaixaProps) {
       console.log('Iniciando finalização da OS:', ordem.numero);
       
       // 1. Atualizar status da OS para 'pronta' e definir dataConclusao
-      const updateResponse = await fetch(`http://177.54.148.12:9001/api/ordens-servico/${ordem.id}`, {
+      const updateResponse = await fetch(`/api/ordens-servico/${ordem.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -406,7 +406,7 @@ export function Caixa({}: CaixaProps) {
       
       console.log('Dados da movimentação:', movimentacaoData);
       
-      const movimentacaoResponse = await fetch('http://177.54.148.12:9001/api/caixa', {
+      const movimentacaoResponse = await fetch('/api/caixa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(movimentacaoData)
@@ -474,7 +474,7 @@ export function Caixa({}: CaixaProps) {
       // Criar registro de resumo do mês
       const mesAno = `${hoje.toLocaleString('pt-BR', { month: 'long' })}/${hoje.getFullYear()}`;
       
-      const resumoResponse = await fetch('http://177.54.148.12:9001/api/caixa', {
+      const resumoResponse = await fetch('/api/caixa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -494,7 +494,7 @@ export function Caixa({}: CaixaProps) {
 
       // Excluir todas as movimentações do mês (exceto o resumo)
       for (const mov of movimentacoesMes) {
-        await fetch(`http://177.54.148.12:9001/api/caixa/${mov.id}`, {
+        await fetch(`/api/caixa/${mov.id}`, {
           method: 'DELETE'
         });
       }
@@ -531,7 +531,7 @@ export function Caixa({}: CaixaProps) {
 
       console.log('Iniciando migração...');
       
-      const response = await fetch('http://177.54.148.12:9001/api/caixa/migrar-ordens', {
+      const response = await fetch('/api/caixa/migrar-ordens', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });

@@ -8,6 +8,13 @@ export default defineConfig({
   server: {
     port: 5174,
     host: '0.0.0.0',
+    proxy: {
+      // Em dev, encaminha as chamadas /api para o backend Express
+      '/api': {
+        target: `http://localhost:${process.env.API_PORT || 9001}`,
+        changeOrigin: true,
+      },
+    },
   },
   optimizeDeps: {
     include: ['lucide-react'], // Incluir lucide-react no bundle

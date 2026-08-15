@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Cliente, Moto, Orcamento, OrdemServico, DashboardStats } from '../types';
 
 const API_URL = window.location.hostname === 'localhost' 
-  ? 'http://localhost:9001/api'
-  : `http://${window.location.hostname}:9001/api`;
+  ? '/api'
+  : `/api`;
 
 export function usePrismaData() {
   const [clientes, setClientes] = useState<Cliente[]>([]);

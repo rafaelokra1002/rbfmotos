@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Database, Upload, CheckCircle, AlertCircle } from 'lucide-react';
 
-const API_URL = 'http://localhost:9001/api';
+const API_URL = '/api';
 
 export function MigrarDados() {
   const [status, setStatus] = useState<'idle' | 'migrando' | 'sucesso' | 'erro'>('idle');

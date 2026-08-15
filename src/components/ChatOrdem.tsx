@@ -45,8 +45,8 @@ export function ChatOrdem({ ordemId, ordemNumero, ordemStatus, clienteNome, moto
   const carregarMensagens = async () => {
     try {
       const API_URL = window.location.hostname === 'localhost' 
-        ? 'http://localhost:9001/api'
-        : `http://${window.location.hostname}:9001/api`;
+        ? '/api'
+        : `/api`;
 
       const response = await fetch(`${API_URL}/mensagens/${ordemId}`);
       if (response.ok) {
@@ -70,8 +70,8 @@ export function ChatOrdem({ ordemId, ordemNumero, ordemStatus, clienteNome, moto
 
     try {
       const API_URL = window.location.hostname === 'localhost' 
-        ? 'http://localhost:9001/api'
-        : `http://${window.location.hostname}:9001/api`;
+        ? '/api'
+        : `/api`;
 
       const response = await fetch(`${API_URL}/mensagens`, {
         method: 'POST',

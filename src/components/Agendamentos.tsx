@@ -91,7 +91,7 @@ export function Agendamentos() {
 
   const carregarAgendamentos = async () => {
     try {
-      const response = await fetch('http://localhost:9001/api/agendamentos');
+      const response = await fetch('/api/agendamentos');
       if (response.ok) {
         const data = await response.json();
         setAgendamentos(data);
@@ -123,7 +123,7 @@ export function Agendamentos() {
         observacoes: dados.observacoes || null,
       };
 
-      const response = await fetch('http://localhost:9001/api/agendamentos', {
+      const response = await fetch('/api/agendamentos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(agendamentoData),

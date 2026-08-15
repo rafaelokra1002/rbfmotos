@@ -34,8 +34,8 @@ export function Financeiro() {
   // Função para cadastrar dívida parcelada (chama API backend)
   async function handleCadastrarDivida(data: { valorTotal: number; valorParcela: number; frequencia: string; descricao: string; categoriaId: string }) {
     const API_URL = window.location.hostname === 'localhost'
-      ? 'http://localhost:9001/api'
-      : `http://${window.location.hostname}:9001/api`;
+      ? '/api'
+      : `/api`;
     await fetch(`${API_URL}/financeiro/contas-pagar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -60,8 +60,8 @@ export function Financeiro() {
   // Buscar movimentações do caixa
   useEffect(() => {
     const API_URL = window.location.hostname === 'localhost' 
-      ? 'http://localhost:9001/api'
-      : `http://${window.location.hostname}:9001/api`;
+      ? '/api'
+      : `/api`;
     
     fetch(`${API_URL}/caixa`)
       .then(res => res.json())

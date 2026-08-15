@@ -130,8 +130,8 @@ export function OrdensServico({ ordemIdParaAbrir, onChatAberto }: OrdensServicoP
 
       // Registrar no caixa
       const API_URL = window.location.hostname === 'localhost' 
-        ? 'http://localhost:9001/api'
-        : `http://${window.location.hostname}:9001/api`;
+        ? '/api'
+        : `/api`;
 
       await fetch(`${API_URL}/caixa`, {
         method: 'POST',
@@ -190,8 +190,8 @@ export function OrdensServico({ ordemIdParaAbrir, onChatAberto }: OrdensServicoP
       
       // Buscar dados completos da ordem do servidor
       const API_URL = window.location.hostname === 'localhost' 
-        ? 'http://localhost:9001/api'
-        : `http://${window.location.hostname}:9001/api`;
+        ? '/api'
+        : `/api`;
       
       const response = await fetch(`${API_URL}/ordens-servico/${ordem.id}`);
       const ordemCompleta = await response.json();

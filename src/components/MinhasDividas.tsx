@@ -39,8 +39,8 @@ export function MinhasDividas() {
   });
 
   const API_URL = window.location.hostname === 'localhost'
-    ? 'http://localhost:9001/api'
-    : `http://${window.location.hostname}:9001/api`;
+    ? '/api'
+    : `/api`;
 
   // Buscar dívidas
   const fetchDividas = () => {

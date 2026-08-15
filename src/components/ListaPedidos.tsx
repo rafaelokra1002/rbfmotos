@@ -69,7 +69,7 @@ export function ListaPedidos() {
   const carregarPedidos = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://177.54.148.12:9001/api/pedidos');
+      const response = await fetch('/api/pedidos');
       if (response.ok) {
         const data = await response.json();
         setPedidos(data);
@@ -83,7 +83,7 @@ export function ListaPedidos() {
 
   const carregarPecas = async () => {
     try {
-      const response = await fetch('http://177.54.148.12:9001/api/pecas');
+      const response = await fetch('/api/pecas');
       if (response.ok) {
         const data = await response.json();
         setPecas(data);
@@ -96,7 +96,7 @@ export function ListaPedidos() {
   const verificarEstoqueBaixo = async (silencioso = false) => {
     try {
       setVerificandoEstoque(true);
-      const response = await fetch('http://177.54.148.12:9001/api/pedidos/verificar-estoque', {
+      const response = await fetch('/api/pedidos/verificar-estoque', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ limite: 5 })
@@ -146,8 +146,8 @@ export function ListaPedidos() {
       };
 
       const url = editando
-        ? `http://177.54.148.12:9001/api/pedidos/${editando.id}`
-        : 'http://177.54.148.12:9001/api/pedidos';
+        ? `/api/pedidos/${editando.id}`
+        : '/api/pedidos';
 
       const response = await fetch(url, {
         method: editando ? 'PUT' : 'POST',
@@ -170,7 +170,7 @@ export function ListaPedidos() {
     if (!confirm('Tem certeza que deseja excluir este item?')) return;
 
     try {
-      const response = await fetch(`http://177.54.148.12:9001/api/pedidos/${id}`, {
+      const response = await fetch(`/api/pedidos/${id}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -190,7 +190,7 @@ export function ListaPedidos() {
         dados.dataRecebimento = new Date().toISOString();
       }
 
-      const response = await fetch(`http://177.54.148.12:9001/api/pedidos/${id}`, {
+      const response = await fetch(`/api/pedidos/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dados)

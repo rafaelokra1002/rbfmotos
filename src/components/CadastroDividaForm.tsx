@@ -30,8 +30,8 @@ export function CadastroDividaForm({ onSubmit, isOpen, onClose }: CadastroDivida
   useEffect(() => {
     if (isOpen) {
       const API_URL = window.location.hostname === 'localhost'
-        ? 'http://localhost:9001/api'
-        : `http://${window.location.hostname}:9001/api`;
+        ? '/api'
+        : `/api`;
       fetch(`${API_URL}/financeiro/categorias?tipo=DESPESA`)
         .then(res => res.json())
         .then(data => {
