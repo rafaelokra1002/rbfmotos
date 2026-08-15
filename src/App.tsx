@@ -298,7 +298,7 @@ function App() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
+        <header className="min-h-[4rem] pt-[env(safe-area-inset-top)] border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
           <div className="flex items-center gap-3 flex-1">
             {/* Mobile Menu Toggle Button */}
             <button

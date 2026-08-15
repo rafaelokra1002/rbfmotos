@@ -103,7 +103,7 @@ export function SidebarProfessional({
         `}
       >
         {/* Header */}
-        <div className="h-16 border-b border-slate-200 dark:border-slate-800 flex items-center px-4 flex-shrink-0">
+        <div className="min-h-[4rem] pt-[env(safe-area-inset-top)] border-b border-slate-200 dark:border-slate-800 flex items-center px-4 flex-shrink-0">
           {!isCollapsed ? (
             <div className="flex items-center gap-3 flex-1 min-w-0">
               {logo ? (
