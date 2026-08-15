@@ -1,0 +1,401 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   VARIÁVEIS CSS GLOBAIS
+   ============================================ */
+:root {
+  /* Cores Dark Mode */
+  --color-bg-primary: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-bg-tertiary: #334155;
+  --color-border: #475569;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  
+  /* Cores Brand */
+  --color-brand: #fbbf24;
+  --color-brand-light: #fcd34d;
+  --color-brand-dark: #f59e0b;
+  
+  /* Sombras */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+  
+  /* Transições */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+}
+
+@layer base {
+  /* ============================================
+     RESET & BASE STYLES
+     ============================================ */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  html {
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+    scroll-behavior: smooth;
+  }
+  
+  html, body, #root {
+    @apply h-full;
+  }
+  
+  body {
+    overscroll-behavior: none;
+    @apply bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transition: background-color var(--transition-normal);
+    letter-spacing: -0.01em; /* Tracking mais natural */
+  }
+
+  /* ============================================
+     MODO COMPACTO (1366x768 e menores)
+     ============================================ */
+  html.compact-mode {
+    font-size: 14px;
+  }
+
+  @media (max-width: 1366px) {
+    html.compact-mode {
+      font-size: 13.5px;
+    }
+  }
+
+  html.compact-mode body {
+    line-height: 1.4;
+  }
+
+  html.compact-mode .page-container {
+    padding: 0.75rem;
+  }
+
+  html.compact-mode .compact-content {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  html.compact-mode .compact-content > div {
+    max-width: 100%;
+  }
+
+  html.compact-mode .compact-content .grid {
+    gap: 0.75rem;
+  }
+  
+  /* ============================================
+     TIPOGRAFIA PROFISSIONAL
+     ============================================ */
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.02em; /* Tracking mais natural */
+    font-weight: 600; /* Semibold em vez de bold */
+  }
+
+  h1 { font-size: 2.25rem; line-height: 2.5rem; } /* text-4xl */
+  h2 { font-size: 1.875rem; line-height: 2.25rem; } /* text-3xl */
+  h3 { font-size: 1.5rem; line-height: 2rem; } /* text-2xl */
+  h4 { font-size: 1.25rem; line-height: 1.75rem; } /* text-xl */
+  h5 { font-size: 1.125rem; line-height: 1.75rem; } /* text-lg */
+  h6 { font-size: 1rem; line-height: 1.5rem; } /* text-base */
+
+  /* Parágrafos e texto */
+  p {
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+  }
+
+  /* Labels e textos pequenos */
+  label, .text-label {
+    letter-spacing: 0;
+    font-weight: 500;
+  }
+
+  /* Uppercase text mais legível */
+  .uppercase {
+    letter-spacing: 0.025em !important; /* Tracking mínimo para uppercase */
+  }
+  
+  /* ============================================
+     SCROLLBAR CUSTOMIZADA
+     ============================================ */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(251, 191, 36, 0.3) transparent;
+  }
+  
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  *::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+  }
+  
+  *::-webkit-scrollbar-thumb {
+    background: rgba(251, 191, 36, 0.3);
+    border-radius: 4px;
+    transition: background var(--transition-normal);
+  }
+  
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgba(251, 191, 36, 0.5);
+  }
+  
+  /* ============================================
+     FOCUS STYLES (Acessibilidade)
+     ============================================ */
+  *:focus-visible {
+    outline: 2px solid #fbbf24;
+    outline-offset: 2px;
+  }
+  
+  button:focus-visible {
+    outline: 2px solid #fbbf24;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* ============================================
+     BOTÕES GLOBAIS (Legacy Support)
+     ============================================ */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-400 text-slate-900 font-semibold hover:bg-amber-300 rounded-lg transition-all duration-250 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-md hover:shadow-lg;
+  }
+  
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-700 text-slate-100 font-semibold hover:bg-slate-600 rounded-lg transition-all duration-250 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-md hover:shadow-lg;
+  }
+  
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 text-white font-semibold hover:bg-red-600 rounded-lg transition-all duration-250 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-md hover:shadow-lg;
+  }
+  
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-slate-300 font-medium hover:bg-slate-700 hover:text-slate-100 rounded-lg transition-all duration-250;
+  }
+  
+  /* ============================================
+     CONTAINERS & LAYOUTS
+     ============================================ */
+  .page-container {
+    @apply min-h-screen bg-slate-900 p-4 sm:p-6 lg:p-8;
+  }
+  
+  .content-wrapper {
+    @apply max-w-7xl mx-auto space-y-6;
+  }
+  
+  /* ============================================
+     CARDS
+     ============================================ */
+  .card {
+    @apply bg-slate-800 rounded-xl shadow-lg border border-slate-700 transition-all duration-250 hover:shadow-xl hover:border-slate-600;
+  }
+  
+  .card-header {
+    @apply px-6 py-4 border-b border-slate-700;
+  }
+  
+  .card-body {
+    @apply p-6;
+  }
+  
+  .card-footer {
+    @apply px-6 py-4 border-t border-slate-700 bg-slate-800/50;
+  }
+  
+  /* ============================================
+     INPUTS & FORMS
+     ============================================ */
+  .input {
+    @apply w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all duration-250;
+  }
+  
+  .input-error {
+    @apply border-red-500 focus:ring-red-400;
+  }
+  
+  .label {
+    @apply block text-sm font-medium text-slate-300 mb-2;
+  }
+  
+  /* ============================================
+     TABELAS
+     ============================================ */
+  .table {
+    @apply min-w-full divide-y divide-slate-700;
+  }
+  
+  .table-header {
+    @apply bg-slate-800/50;
+  }
+  
+  .table-header-cell {
+    @apply px-6 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-normal;
+  }
+  
+  .table-body {
+    @apply bg-slate-800 divide-y divide-slate-700;
+  }
+  
+  .table-row {
+    @apply hover:bg-slate-700/50 transition-colors duration-150;
+  }
+  
+  .table-cell {
+    @apply px-6 py-4 whitespace-nowrap text-sm text-slate-300;
+  }
+}
+
+@layer utilities {
+  /* ============================================
+     SCROLLBAR UTILITIES
+     ============================================ */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(251, 191, 36, 0.3) transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(251, 191, 36, 0.3);
+    border-radius: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(251, 191, 36, 0.5);
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* ============================================
+     ANIMATIONS
+     ============================================ */
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  .animate-slideUp {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  .animate-slideDown {
+    animation: slideDown 0.3s ease-out;
+  }
+  
+  .animate-scaleIn {
+    animation: scaleIn 0.2s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideUp {
+    from { 
+      transform: translateY(10px); 
+      opacity: 0; 
+    }
+    to { 
+      transform: translateY(0); 
+      opacity: 1; 
+    }
+  }
+  
+  @keyframes slideDown {
+    from { 
+      transform: translateY(-10px); 
+      opacity: 0; 
+    }
+    to { 
+      transform: translateY(0); 
+      opacity: 1; 
+    }
+  }
+  
+  @keyframes scaleIn {
+    from { 
+      transform: scale(0.95); 
+      opacity: 0; 
+    }
+    to { 
+      transform: scale(1); 
+      opacity: 1; 
+    }
+  }
+  
+  /* ============================================
+     UTILITIES DIVERSAS
+     ============================================ */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-yellow-300;
+  }
+  
+  .bg-glass {
+    @apply bg-slate-800/80 backdrop-blur-md;
+  }
+  
+  .border-glow {
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+  }
+  
+  .hover-lift {
+    @apply transition-transform duration-250;
+  }
+  
+  .hover-lift:hover {
+    @apply -translate-y-1;
+  }
+}
+
+/* ============================================
+   RESPONSIVE UTILITIES
+   ============================================ */
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-full-width {
+    width: 100% !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .desktop-hidden {
+    display: none !important;
+  }
+}

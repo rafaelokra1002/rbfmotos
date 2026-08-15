@@ -1,0 +1,100 @@
+/* Estilos responsivos globais */
+
+/* Tabelas responsivas */
+@media (max-width: 768px) {
+  .responsive-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .responsive-table table {
+    min-width: 100%;
+  }
+  
+  .responsive-table th,
+  .responsive-table td {
+    white-space: nowrap;
+    padding: 0.75rem 0.5rem !important;
+    font-size: 0.875rem !important;
+  }
+}
+
+/* Cards responsivos */
+.responsive-card {
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .responsive-card {
+    padding: 1.5rem;
+  }
+}
+
+/* Formulários responsivos */
+@media (max-width: 640px) {
+  .responsive-form input,
+  .responsive-form select,
+  .responsive-form textarea {
+    font-size: 16px !important; /* Evita zoom no iOS */
+  }
+  
+  .responsive-form button {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+}
+
+/* Modais responsivos */
+@media (max-width: 768px) {
+  .responsive-modal {
+    margin: 0.5rem !important;
+    max-height: 95vh;
+    overflow-y: auto;
+  }
+}
+
+/* Grid responsivo */
+.responsive-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+/* Botões responsivos */
+@media (max-width: 640px) {
+  .btn-responsive {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* Espaçamento responsivo */
+.spacing-responsive {
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .spacing-responsive {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .spacing-responsive {
+    padding: 2rem;
+  }
+}

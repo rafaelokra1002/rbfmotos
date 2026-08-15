@@ -1,0 +1,423 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Cliente {
+  id           String         @id @default(uuid())
+  nome         String
+  telefone     String
+  email        String?
+  endereco     String?
+  cpf          String?
+  dataCadastro DateTime       @default(now())
+  motos        Moto[]
+  orcamentos   Orcamento[]
+  ordensServico OrdemServico[]
+  contasReceber ContaReceber[] @relation("ClienteContaReceber")
+  
+  @@map("clientes")
+}
+
+model Moto {
+  id           String         @id @default(uuid())
+  clienteId    String
+  marca        String
+  modelo       String
+  ano          Int
+  placa        String         @unique
+  cor          String
+  km           Int?
+  observacoes  String?
+  cliente      Cliente        @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  orcamentos   Orcamento[]
+  ordensServico OrdemServico[]
+  
+  @@map("motos")
+}
+
+model Servico {
+  id             String   @id @default(uuid())
+  nome           String
+  descricao      String?
+  preco          Float
+  categoria      String
+  tempoEstimado  Int?
+  itensOrcamento ItemOrcamento[]
+  
+  @@map("servicos")
+}
+
+model Peca {
+  id             String   @id @default(uuid())
+  nome           String
+  codigo         String?
+  preco          Float
+  categoria      String
+  estoque        Int?
+  estoqueMinimo  Int?     // Novo: alerta de estoque baixo
+  fornecedor     String?  // Novo: fornecedor principal
+  localizacao    String?  // Novo: onde está guardada
+  ultimaCompra   DateTime? // Novo: data última compra
+  itensOrcamento ItemOrcamento[]
+  movimentacoes  MovimentacaoEstoque[] // Novo: histórico
+  contasPagar    ContaPagar[] @relation("PecaContaPagar")
+  
+  @@map("pecas")
+}
+
+model ItemOrcamento {
+  id             String     @id @default(uuid())
+  orcamentoId    String?
+  ordemServicoId String?
+  tipo           String
+  itemId         String?
+  nome           String
+  quantidade     Int
+  precoUnitario  Float
+  desconto       Float?
+  unidade        String?    // Para fluidos: 'un' ou 'ml'
+  volumeMl       Int?       // Volume em ml para fluidos
+  orcamento      Orcamento?     @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+  ordemServico   OrdemServico?  @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  servico        Servico?       @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  peca           Peca?          @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  
+  @@map("itens_orcamento")
+}
+
+model Orcamento {
+  id                String          @id @default(uuid())
+  numero            String          @unique
+  clienteId         String
+  motoId            String
+  itens             ItemOrcamento[]
+  descricaoProblema String
+  observacoes       String?
+  valorTotal        Float
+  desconto          Float?
+  status            String          @default("pendente")
+  dataEmissao       DateTime        @default(now())
+  validadeAte       DateTime
+  aprovadoEm        DateTime?
+  cliente           Cliente         @relation(fields: [clienteId], references: [id])
+  moto              Moto            @relation(fields: [motoId], references: [id])
+  ordensServico     OrdemServico[]
+  
+  @@map("orcamentos")
+}
+
+model OrdemServico {
+  id                   String          @id @default(uuid())
+  numero               String          @unique
+  clienteId            String
+  motoId               String
+  orcamentoId          String?
+  itens                ItemOrcamento[]
+  descricaoProblema    String
+  diagnostico          String?
+  observacoes          String?
+  observacoesTecnicas  String?
+  fotos                String?         // JSON array de base64
+  status               String          @default("aberta")
+  prioridade           String          @default("media")
+  dataAbertura         DateTime        @default(now())
+  dataInicio           DateTime?
+  dataPrevisao         DateTime?
+  dataConclusao        DateTime?
+  dataEntrega          DateTime?
+  valorTotal           Float
+  valorPago            Float?
+  formaPagamento       String?
+  garantia             Int?
+  tecnicoResponsavel   String?
+  cliente              Cliente         @relation(fields: [clienteId], references: [id])
+  moto                 Moto            @relation(fields: [motoId], references: [id])
+  orcamento            Orcamento?      @relation(fields: [orcamentoId], references: [id])
+  contasReceber        ContaReceber[] @relation("OrdemContaReceber")
+  
+  @@map("ordens_servico")
+}
+
+model Agendamento {
+  id              String    @id @default(uuid())
+  clienteId       String
+  motoId          String?   // Opcional - permite agendar sem moto específica
+  dataAgendada    DateTime
+  horaInicio      String
+  horaFim         String
+  servicos        String    // JSON array de serviços
+  mecanico        String?
+  status          String    @default("agendado") // agendado, confirmado, em_atendimento, concluido, cancelado
+  observacoes     String?
+  criadoEm        DateTime  @default(now())
+  
+  @@map("agendamentos")
+}
+
+model Pagamento {
+  id              String    @id @default(uuid())
+  ordemServicoId  String
+  tipo            String    // pix, dinheiro, cartao_debito, cartao_credito, transferencia
+  valor           Float
+  parcela         Int?      // numero da parcela
+  totalParcelas   Int?      // total de parcelas
+  dataPagamento   DateTime  @default(now())
+  dataVencimento  DateTime? // para parcelas
+  status          String    @default("pago") // pago, pendente, atrasado
+  pixChave        String?   // chave PIX usada
+  pixQrCode       String?   // QR Code gerado
+  comprovante     String?   // base64 do comprovante
+  observacoes     String?
+  
+  @@map("pagamentos")
+}
+
+model MovimentacaoEstoque {
+  id              String    @id @default(uuid())
+  pecaId          String
+  tipo            String    // entrada, saida, ajuste
+  quantidade      Int
+  valorUnitario   Float?
+  motivo          String    // venda, compra, ajuste, perda, devolucao
+  ordemServicoId  String?   // se foi usado em uma OS
+  usuarioId       String?   // quem fez a movimentação
+  observacoes     String?
+  dataMovimento   DateTime  @default(now())
+  peca            Peca      @relation(fields: [pecaId], references: [id])
+  
+  @@map("movimentacoes_estoque")
+}
+
+model Relatorio {
+  id              String    @id @default(uuid())
+  tipo            String    // faturamento, pecas_vendidas, servicos_realizados, clientes_frequentes
+  periodo         String    // diario, semanal, mensal, anual, personalizado
+  dataInicio      DateTime
+  dataFim         DateTime
+  dados           String    // JSON com os dados do relatório
+  geradoEm        DateTime  @default(now())
+  geradoPor       String?
+  
+  @@map("relatorios")
+}
+
+model Mecanico {
+  id              String    @id @default(uuid())
+  nome            String
+  telefone        String
+  email           String?
+  cpf             String?
+  especialidade   String?   // mecanica_geral, eletrica, suspensao, motor, freios
+  salario         Float?
+  dataAdmissao    DateTime  @default(now())
+  status          String    @default("ativo") // ativo, inativo, ferias
+  observacoes     String?
+  
+  @@map("mecanicos")
+}
+
+model MovimentacaoCaixa {
+  id              String    @id @default(uuid())
+  tipo            String    // entrada, saida
+  categoria       String    // categoria da movimentação
+  descricao       String
+  valor           Float
+  formaPagamento  String    // dinheiro, pix, cartao_debito, cartao_credito, transferencia
+  data            DateTime
+  ordemServicoId  String?   // referência opcional a uma OS
+  observacoes     String?
+  criadoEm        DateTime  @default(now())
+  
+  @@map("movimentacoes_caixa")
+}
+
+
+// ================= FINANCEIRO =================
+
+enum TipoCategoriaFinanceira {
+  DESPESA
+  RECEITA
+}
+
+enum FrequenciaPagamento {
+  AVISTA
+  SEMANAL
+  QUINZENAL
+  MENSAL
+}
+
+enum StatusParcelaFinanceira {
+  PENDENTE
+  PAGO
+  ATRASADO
+  CANCELADO
+}
+
+enum FormaPagamentoFinanceira {
+  DINHEIRO
+  PIX
+  CARTAO_CREDITO
+  CARTAO_DEBITO
+  BOLETO
+  TRANSFERENCIA
+}
+
+enum TipoMetaFinanceira {
+  FATURAMENTO
+  ECONOMIA
+  REDUCAO_CUSTOS
+  QUITACAO_DIVIDA
+}
+
+model CategoriaFinanceira {
+  id        String   @id @default(uuid())
+  nome      String
+  tipo      TipoCategoriaFinanceira
+  icone     String   @default("📦")
+  cor       String   @default("#6b7280")
+  oficinaId String   // Isolamento multi-oficina
+  contasPagar   ContaPagar[]
+  contasReceber ContaReceber[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContaPagar {
+  id                String   @id @default(uuid())
+  descricao         String
+  fornecedor        String?
+  valorTotal        Float
+  dataVencimento    DateTime
+  frequencia        FrequenciaPagamento
+  valorParcela      Float
+  observacoes       String?
+  categoriaId       String
+  categoria         CategoriaFinanceira @relation(fields: [categoriaId], references: [id])
+  compraPecaId      String?
+  compraPeca        Peca?    @relation("PecaContaPagar", fields: [compraPecaId], references: [id])
+  parcelas          ParcelaPagar[]
+  oficinaId         String   // Isolamento multi-oficina
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  @@index([dataVencimento])
+  @@index([categoriaId])
+}
+
+model ParcelaPagar {
+  id            String   @id @default(uuid())
+  contaPagarId  String
+  contaPagar    ContaPagar @relation(fields: [contaPagarId], references: [id], onDelete: Cascade)
+  numeroParcela Int
+  dataVencimento DateTime
+  valor         Float
+  status        StatusParcelaFinanceira @default(PENDENTE)
+  pagamento     PagamentoSaida?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([contaPagarId, dataVencimento])
+}
+
+model PagamentoSaida {
+  id              String   @id @default(uuid())
+  parcelaPagarId  String   @unique
+  parcelaPagar    ParcelaPagar @relation(fields: [parcelaPagarId], references: [id], onDelete: Cascade)
+  dataPagamento   DateTime
+  valorPago       Float
+  formaPagamento  FormaPagamentoFinanceira
+  observacao      String?
+  createdAt       DateTime @default(now())
+}
+
+model ContaReceber {
+  id                String   @id @default(uuid())
+  descricao         String
+  clienteId         String?
+  cliente           Cliente? @relation("ClienteContaReceber", fields: [clienteId], references: [id])
+  clienteNome       String
+  valorTotal        Float
+  dataVencimento    DateTime
+  frequencia        FrequenciaPagamento
+  valorParcela      Float
+  observacoes       String?
+  categoriaId       String
+  categoria         CategoriaFinanceira @relation(fields: [categoriaId], references: [id])
+  ordemServicoId    String?
+  ordemServico      OrdemServico? @relation("OrdemContaReceber", fields: [ordemServicoId], references: [id])
+  parcelas          ParcelaReceber[]
+  oficinaId         String   // Isolamento multi-oficina
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  @@index([dataVencimento])
+  @@index([clienteId])
+}
+
+model ParcelaReceber {
+  id              String   @id @default(uuid())
+  contaReceberId  String
+  contaReceber    ContaReceber @relation(fields: [contaReceberId], references: [id], onDelete: Cascade)
+  numeroParcela   Int
+  dataVencimento  DateTime
+  valor           Float
+  status          StatusParcelaFinanceira @default(PENDENTE)
+  recebimento     Recebimento?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@index([contaReceberId, dataVencimento])
+}
+
+model Recebimento {
+  id                String   @id @default(uuid())
+  parcelaReceberId  String   @unique
+  parcelaReceber    ParcelaReceber @relation(fields: [parcelaReceberId], references: [id], onDelete: Cascade)
+  dataRecebimento   DateTime
+  valorRecebido     Float
+  formaPagamento    FormaPagamentoFinanceira
+  observacao        String?
+  createdAt         DateTime @default(now())
+}
+
+model MetaFinanceira {
+  id            String   @id @default(uuid())
+  nome          String
+  tipo          TipoMetaFinanceira
+  valorMeta     Float
+  valorAtual    Float  @default(0)
+  dataInicio    DateTime
+  dataFim       DateTime
+  descricao     String?
+  concluida     Boolean  @default(false)
+  oficinaId     String   // Isolamento multi-oficina
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ============ LISTA DE PEDIDOS (COMPRAS) ============
+
+model ItemPedido {
+  id            String   @id @default(uuid())
+  nome          String
+  quantidade    Int      @default(1)
+  precoEstimado Float?
+  categoria     String?  // Peça, Serviço, Acessório, Outros
+  fornecedor    String?
+  urgencia      String   @default("normal") // baixa, normal, alta, urgente
+  status        String   @default("pendente") // pendente, pedido, recebido, cancelado
+  origem        String?  // venda_avulsa, ordem_servico, manual, estoque_baixo
+  origemId      String?  // ID da OS ou venda que gerou
+  pecaId        String?  // Se for uma peça cadastrada
+  observacoes   String?
+  dataCriacao   DateTime @default(now())
+  dataAtualizacao DateTime @updatedAt
+  dataPedido    DateTime?
+  dataRecebimento DateTime?
+  
+  @@map("itens_pedido")
+}

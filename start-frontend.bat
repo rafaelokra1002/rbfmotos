@@ -1,0 +1,3 @@
+@echo off
+echo Iniciando servidor frontend na porta 5174...
+npm run dev

@@ -1,0 +1,3 @@
+@echo off
+echo Iniciando servidor backend na porta 9001...
+npm run server
