@@ -88,8 +88,9 @@ export function MotoForm({ clienteId, moto, isOpen, onClose, onSave }: MotoFormP
   };
 
   const formatPlaca = (value: string) => {
-    // Remove caracteres não alfanuméricos e converte para maiúsculo
-    const limpo = value.replace(/[^A-Z0-9]/g, '').toUpperCase();
+    // Converte para maiúsculo PRIMEIRO e depois remove não alfanuméricos
+    // (senão letras minúsculas seriam apagadas antes de virar maiúsculas)
+    const limpo = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
     
     // Aplica formatação ABC-1234 ou ABC1D23 (Mercosul)
     if (limpo.length <= 3) {
@@ -224,6 +225,9 @@ export function MotoForm({ clienteId, moto, isOpen, onClose, onSave }: MotoFormP
                 className="w-full px-4 py-3 border border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-400/20 focus:border-amber-400 bg-slate-900 text-slate-100 placeholder:text-slate-500 transition-all hover:border-amber-400/50 uppercase"
                 placeholder="ABC-1234"
                 maxLength={8}
+                autoCapitalize="characters"
+                autoCorrect="off"
+                spellCheck={false}
                 required
               />
             </div>
