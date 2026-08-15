@@ -18,7 +18,26 @@ export function initPWA() {
     window.dispatchEvent(new CustomEvent('pwa:installed'));
   });
 
+  // Se um chunk (import dinâmico) falhar ao carregar — típico após um novo
+  // deploy com hashes diferentes — recarrega a página uma única vez para
+  // buscar a versão nova, evitando a "tela preta".
+  window.addEventListener('vite:preloadError', () => {
+    if (!sessionStorage.getItem('rbf_reloaded_preload')) {
+      sessionStorage.setItem('rbf_reloaded_preload', '1');
+      window.location.reload();
+    }
+  });
+
   if ('serviceWorker' in navigator && import.meta.env.PROD) {
+    // Quando um novo Service Worker assume o controle, recarrega para aplicar
+    // a versão nova (uma vez só, sem loop).
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js').catch((err) => {
         console.warn('Falha ao registrar o Service Worker:', err);

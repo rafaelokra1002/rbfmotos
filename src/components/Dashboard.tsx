@@ -177,11 +177,11 @@ export function Dashboard({ onNavigateToOrdens }: DashboardProps) {
     .filter(item => item.servico);
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
+          <h1 className="text-xl sm:text-3xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
             Dashboard
           </h1>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-1.5">
@@ -199,7 +199,7 @@ export function Dashboard({ onNavigateToOrdens }: DashboardProps) {
       </div>
 
       {/* Cards de estatísticas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard title="Ordens Abertas" value={stats.ordensAbertas} icon={Wrench} color="blue" />
         <StatCard title="Em Andamento" value={stats.ordensEmAndamento} icon={Clock} color="amber" />
         <StatCard title="Prontas" value={stats.ordensProntas} icon={CheckCircle} color="emerald" />
@@ -495,14 +495,14 @@ function StatCard({ title, value, icon: Icon, color }: StatCardProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-card border border-slate-200 dark:border-slate-700 p-5 transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-medium">
-      <div className="flex items-start justify-between gap-4 mb-3">
-        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">{title}</p>
-        <div className={`flex-shrink-0 ${iconColors[color]} rounded-lg p-2`}>
-          <Icon className="w-5 h-5" />
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-card border border-slate-200 dark:border-slate-700 p-3.5 sm:p-5 transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-medium">
+      <div className="flex items-start justify-between gap-2 mb-2 sm:mb-3">
+        <p className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide leading-tight">{title}</p>
+        <div className={`flex-shrink-0 ${iconColors[color]} rounded-lg p-1.5 sm:p-2`}>
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
       </div>
-      <p className="text-3xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">{value}</p>
+      <p className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">{value}</p>
     </div>
   );
 }
