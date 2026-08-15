@@ -95,7 +95,7 @@ function App() {
     e.preventDefault();
     setLoginError('');
 
-    if (username === 'Rbfmotos' && password === '259918') {
+    if (username.trim().toLowerCase() === 'rbfmotos' && password.trim() === '259918') {
       setIsAuthenticated(true);
       localStorage.setItem('rbfmotos_authenticated', 'true');
     } else {
@@ -172,6 +172,10 @@ function App() {
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-2 focus:ring-slate-200 dark:focus:ring-slate-700 transition-all"
                     placeholder="Digite seu usuário"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    autoComplete="username"
+                    spellCheck={false}
                     required
                     autoFocus
                   />
