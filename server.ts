@@ -1789,6 +1789,46 @@ app.post('/api/push/subscribe', async (req, res) => {
   }
 });
 
+// Enviar um push de teste para as inscrições de uma ordem (diagnóstico)
+app.post('/api/push/test', async (req, res) => {
+  try {
+    const { ordemId } = req.body;
+    if (!ordemId) return res.status(400).json({ error: 'ordemId obrigatório' });
+
+    if (!pushHabilitado) {
+      return res.json({ habilitado: false, inscricoes: 0, enviados: 0 });
+    }
+
+    const inscricoes = await (prisma as any).pushSubscription.findMany({ where: { ordemId } });
+    let enviados = 0;
+
+    for (const sub of inscricoes) {
+      try {
+        await webpush.sendNotification(
+          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          JSON.stringify({
+            title: '🔔 Teste RBF Motos',
+            body: 'Se você recebeu isto, as notificações estão funcionando!',
+            url: '/portal',
+          }),
+        );
+        enviados++;
+      } catch (err: any) {
+        if (err?.statusCode === 404 || err?.statusCode === 410) {
+          await (prisma as any).pushSubscription.delete({ where: { endpoint: sub.endpoint } }).catch(() => {});
+        } else {
+          console.error('Erro no push de teste:', err?.statusCode || err?.message || err);
+        }
+      }
+    }
+
+    res.json({ habilitado: true, inscricoes: inscricoes.length, enviados });
+  } catch (error) {
+    console.error('Erro no push de teste:', error);
+    res.status(500).json({ error: 'Erro no push de teste' });
+  }
+});
+
 // ================= FRONTEND (SPA) =================
 // Em produção, o Express serve o build do Vite (pasta dist) e faz o
 // fallback para o index.html em qualquer rota que não seja da API.

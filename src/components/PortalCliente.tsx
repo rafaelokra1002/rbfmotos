@@ -71,6 +71,30 @@ export function PortalCliente() {
     }
   };
 
+  // Diagnóstico: dispara um push de teste imediato para este aparelho
+  const testarNotificacao = async (ordemId: string) => {
+    try {
+      const resp = await fetch('/api/push/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ordemId }),
+      });
+      const data = await resp.json();
+
+      if (!data.habilitado) {
+        alert('O servidor ainda não está com o push configurado (variáveis VAPID). Avise a oficina.');
+      } else if (data.inscricoes === 0) {
+        alert('Este aparelho ainda não está inscrito. Toque em "Ativar avisos" e permita as notificações.');
+      } else if (data.enviados > 0) {
+        alert('Enviamos um aviso de teste! Ele deve aparecer em alguns segundos.');
+      } else {
+        alert('Havia inscrição, mas o envio falhou. Talvez a permissão tenha sido revogada — toque em "Ativar avisos" de novo.');
+      }
+    } catch (e) {
+      alert('Não foi possível testar agora. Verifique sua conexão.');
+    }
+  };
+
   // Auto-scroll quando novas mensagens chegarem
   useEffect(() => {
     if (mensagens.length > 0) {
@@ -626,20 +650,28 @@ export function PortalCliente() {
               </h2>
 
               {pushSuportado() && (
-                notifAtiva ? (
-                  <span className="flex items-center gap-1.5 text-xs sm:text-sm text-emerald-400 font-medium shrink-0">
-                    <BellRing className="w-4 h-4" />
-                    Avisos ativos
-                  </span>
-                ) : (
+                <div className="flex items-center gap-2 shrink-0">
+                  {notifAtiva ? (
+                    <span className="flex items-center gap-1.5 text-xs sm:text-sm text-emerald-400 font-medium">
+                      <BellRing className="w-4 h-4" />
+                      Avisos ativos
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => ordemAtual && ativarNotificacoes(ordemAtual.id)}
+                      className="flex items-center gap-1.5 text-xs sm:text-sm bg-slate-700 hover:bg-slate-600 text-slate-100 font-medium px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      <Bell className="w-4 h-4" />
+                      Ativar avisos
+                    </button>
+                  )}
                   <button
-                    onClick={() => ordemAtual && ativarNotificacoes(ordemAtual.id)}
-                    className="flex items-center gap-1.5 text-xs sm:text-sm bg-slate-700 hover:bg-slate-600 text-slate-100 font-medium px-3 py-1.5 rounded-lg transition-colors shrink-0"
+                    onClick={() => ordemAtual && testarNotificacao(ordemAtual.id)}
+                    className="text-xs sm:text-sm text-slate-400 hover:text-slate-200 underline underline-offset-2"
                   >
-                    <Bell className="w-4 h-4" />
-                    Ativar avisos
+                    Testar
                   </button>
-                )
+                </div>
               )}
             </div>
 
