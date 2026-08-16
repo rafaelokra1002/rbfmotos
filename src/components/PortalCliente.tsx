@@ -43,7 +43,7 @@ interface Moto {
 }
 
 export function PortalCliente() {
-  const { ordens, clientes, motos } = useOficinaData();
+  const { ordens, clientes, motos, carregarOrdemComFotos } = useOficinaData();
   const [codigoAcesso, setCodigoAcesso] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [ordemAtual, setOrdemAtual] = useState<OrdemServico | null>(null);
@@ -82,7 +82,7 @@ export function PortalCliente() {
     }
   }, []);
 
-  const handleBuscar = () => {
+  const handleBuscar = async () => {
     setError('');
     
     // Normalizar código de acesso (remover "OS-" se existir e converter para maiúsculas)
@@ -154,9 +154,24 @@ export function PortalCliente() {
     setMoto(motoData || null);
     setHistoricoServicos(historicoMoto);
     setAuthenticated(true);
-    
+
     // Carregar mensagens da ordem
     carregarMensagens(ordemProcessada.id);
+
+    // A listagem de ordens é carregada sem fotos (por performance).
+    // Buscar a ordem completa sob demanda para exibir as fotos no portal.
+    try {
+      const ordemCompleta = await carregarOrdemComFotos(ordem.id);
+      if (ordemCompleta && Array.isArray(ordemCompleta.fotos)) {
+        setOrdemAtual((atual) =>
+          atual && atual.id === ordem.id
+            ? { ...atual, fotos: ordemCompleta.fotos }
+            : atual
+        );
+      }
+    } catch (e) {
+      console.error('Erro ao carregar fotos da ordem:', e);
+    }
   };
 
   // Atualizar mensagens automaticamente quando autenticado

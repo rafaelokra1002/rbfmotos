@@ -1602,6 +1602,66 @@ app.delete('/api/financeiro/metas/:id', async (req, res) => {
 
 // ================= FIM FINANCEIRO =================
 
+// ================= MENSAGENS (CHAT PORTAL DO CLIENTE) =================
+
+// Listar mensagens de uma ordem de serviço
+app.get('/api/mensagens/:ordemId', async (req, res) => {
+  try {
+    const mensagens = await (prisma as any).mensagem.findMany({
+      where: { ordemId: req.params.ordemId },
+      orderBy: { data: 'asc' },
+    });
+    res.json(mensagens);
+  } catch (error) {
+    console.error('Erro ao buscar mensagens:', error);
+    res.status(500).json({ error: 'Erro ao buscar mensagens' });
+  }
+});
+
+// Criar (enviar) uma mensagem
+app.post('/api/mensagens', async (req, res) => {
+  try {
+    const { ordemId, remetente, mensagem, data, lida } = req.body;
+
+    if (!ordemId || !remetente || !mensagem || !mensagem.trim()) {
+      return res.status(400).json({ error: 'Campos obrigatórios faltando' });
+    }
+
+    if (remetente !== 'cliente' && remetente !== 'oficina') {
+      return res.status(400).json({ error: 'Remetente inválido' });
+    }
+
+    const novaMensagem = await (prisma as any).mensagem.create({
+      data: {
+        ordemId,
+        remetente,
+        mensagem: mensagem.trim(),
+        data: data ? new Date(data) : new Date(),
+        lida: Boolean(lida),
+      },
+    });
+
+    res.json(novaMensagem);
+  } catch (error) {
+    console.error('Erro ao criar mensagem:', error);
+    res.status(500).json({ error: 'Erro ao criar mensagem' });
+  }
+});
+
+// Marcar como lidas as mensagens do cliente de uma ordem (chamado pela oficina)
+app.patch('/api/mensagens/:ordemId/marcar-lidas', async (req, res) => {
+  try {
+    await (prisma as any).mensagem.updateMany({
+      where: { ordemId: req.params.ordemId, remetente: 'cliente', lida: false },
+      data: { lida: true },
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Erro ao marcar mensagens como lidas:', error);
+    res.status(500).json({ error: 'Erro ao marcar mensagens como lidas' });
+  }
+});
+
 // ================= FRONTEND (SPA) =================
 // Em produção, o Express serve o build do Vite (pasta dist) e faz o
 // fallback para o index.html em qualquer rota que não seja da API.

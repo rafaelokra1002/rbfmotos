@@ -397,6 +397,21 @@ model MetaFinanceira {
   updatedAt     DateTime @updatedAt
 }
 
+// ============ CHAT / MENSAGENS PORTAL DO CLIENTE ============
+
+model Mensagem {
+  id         String   @id @default(uuid())
+  ordemId    String
+  remetente  String   // 'cliente' ou 'oficina'
+  mensagem   String
+  data       DateTime @default(now())
+  lida       Boolean  @default(false)
+  criadoEm   DateTime @default(now())
+
+  @@index([ordemId])
+  @@map("mensagens")
+}
+
 // ============ LISTA DE PEDIDOS (COMPRAS) ============
 
 model ItemPedido {
