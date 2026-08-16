@@ -107,25 +107,25 @@ export function ChatOrdem({ ordemId, ordemNumero, ordemStatus, clienteNome, moto
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
       <div className="bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden border border-slate-700/50">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <MessageCircle className="w-6 h-6 text-white" />
+        <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-4 py-4 sm:px-6 sm:py-5 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shrink-0">
+              <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <div>
-              <h2 className="text-2xl font-bold text-white">Chat com Cliente</h2>
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-2xl font-bold text-white truncate">Chat com Cliente</h2>
               <div className="flex flex-col gap-1 mt-1">
-                <p className="text-sm text-blue-100">OS {ordemNumero}</p>
+                <p className="text-xs sm:text-sm text-blue-100 truncate">{ordemNumero}</p>
                 {clienteNome && (
-                  <div className="flex items-center gap-1.5 text-sm text-blue-100">
-                    <User className="w-3.5 h-3.5" />
-                    <span>{clienteNome}</span>
+                  <div className="flex items-center gap-1.5 text-xs sm:text-sm text-blue-100 min-w-0">
+                    <User className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{clienteNome}</span>
                   </div>
                 )}
                 {motoInfo && (
-                  <div className="flex items-center gap-1.5 text-sm text-blue-100">
-                    <Bike className="w-3.5 h-3.5" />
-                    <span>{motoInfo}</span>
+                  <div className="flex items-center gap-1.5 text-xs sm:text-sm text-blue-100 min-w-0">
+                    <Bike className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{motoInfo}</span>
                   </div>
                 )}
               </div>
@@ -133,15 +133,15 @@ export function ChatOrdem({ ordemId, ordemNumero, ordemStatus, clienteNome, moto
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-xl transition-all duration-200 group"
+            className="p-2 hover:bg-white/20 rounded-xl transition-all duration-200 group shrink-0"
           >
             <X className="w-6 h-6 text-white group-hover:rotate-90 transition-transform duration-200" />
           </button>
         </div>
 
         {/* Área de Mensagens */}
-        <div className="p-6">
-          <div className="bg-slate-900 rounded-xl p-4 h-96 overflow-y-auto space-y-3 mb-4">
+        <div className="p-4 sm:p-6">
+          <div className="bg-slate-900 rounded-xl p-3 sm:p-4 h-72 sm:h-96 overflow-y-auto space-y-3 mb-4">
             {mensagens.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-slate-500">
                 <MessageCircle size={48} className="mb-3 opacity-50" />
@@ -192,16 +192,17 @@ export function ChatOrdem({ ordemId, ordemNumero, ordemStatus, clienteNome, moto
                 onChange={(e) => setNovaMensagem(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleEnviarMensagem()}
                 placeholder="Digite sua resposta..."
-                className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-xl focus:ring-2 focus:ring-amber-400/20 focus:border-amber-400 transition-all"
+                style={{ fontSize: '16px' }}
+                className="flex-1 min-w-0 px-3 sm:px-4 py-3 bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-xl focus:ring-2 focus:ring-amber-400/20 focus:border-amber-400 transition-all"
                 disabled={enviandoMensagem}
               />
               <button
                 onClick={handleEnviarMensagem}
                 disabled={!novaMensagem.trim() || enviandoMensagem}
-                className="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-amber-500/30"
+                className="px-4 sm:px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-amber-500/30 shrink-0"
               >
                 <Send size={18} />
-                Enviar
+                <span className="hidden sm:inline">Enviar</span>
               </button>
             </div>
           ) : (

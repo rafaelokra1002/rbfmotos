@@ -742,7 +742,8 @@ export function PortalCliente() {
                 onChange={(e) => setNovaMensagem(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleEnviarMensagem()}
                 placeholder="Digite sua mensagem..."
-                className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-xl focus:ring-2 focus:ring-amber-400/20 focus:border-amber-400 transition-all"
+                style={{ fontSize: '16px' }}
+                className="flex-1 min-w-0 px-3 sm:px-4 py-3 bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-xl focus:ring-2 focus:ring-amber-400/20 focus:border-amber-400 transition-all"
                 disabled={enviandoMensagem}
               />
               <button
