@@ -1741,6 +1741,23 @@ app.post('/api/mensagens', async (req, res) => {
   }
 });
 
+// Total de mensagens de clientes ainda não lidas pela oficina (para alerta global)
+app.get('/api/mensagens-nao-lidas', async (_req, res) => {
+  try {
+    const total = await (prisma as any).mensagem.count({
+      where: { remetente: 'cliente', lida: false },
+    });
+    const ultima = await (prisma as any).mensagem.findFirst({
+      where: { remetente: 'cliente', lida: false },
+      orderBy: { data: 'desc' },
+    });
+    res.json({ total, ultima });
+  } catch (error) {
+    console.error('Erro ao contar mensagens não lidas:', error);
+    res.status(500).json({ error: 'Erro ao contar mensagens não lidas' });
+  }
+});
+
 // Marcar como lidas as mensagens do cliente de uma ordem (chamado pela oficina)
 app.patch('/api/mensagens/:ordemId/marcar-lidas', async (req, res) => {
   try {

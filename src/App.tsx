@@ -18,6 +18,7 @@ const Mecanicos = lazy(() => import('./components/Mecanicos').then(m => ({ defau
 const PortalCliente = lazy(() => import('./components/PortalCliente').then(m => ({ default: m.PortalCliente })));
 import { Lock, User, Key, Bike } from 'lucide-react';
 import { InstallPWAButton } from './components/InstallPWAButton';
+import { OficinaNotificacoes } from './components/OficinaNotificacoes';
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
@@ -277,6 +278,9 @@ function App() {
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden">
+      {/* Vigia global de mensagens de clientes (alerta em qualquer tela) */}
+      <OficinaNotificacoes onAbrirMensagens={() => setCurrentView('ordens')} />
+
       {/* Sidebar Professional */}
       <SidebarProfessional
         currentView={currentView}

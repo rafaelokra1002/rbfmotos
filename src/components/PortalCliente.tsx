@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, Lock, Bike, Wrench, Clock, DollarSign, FileText, CheckCircle, AlertCircle, XCircle, X, ZoomIn, MessageCircle, Send, Bell, BellRing } from 'lucide-react';
 import { useOficinaData } from '../hooks/useOficinaData';
 import { inscreverPushOrdem, pushSuportado } from '../lib/push';
+import { tocarBeep, notificarNavegador } from '../lib/alerta';
 
 interface Mensagem {
   id: string;
@@ -59,6 +60,8 @@ export function PortalCliente() {
   const [novaMensagem, setNovaMensagem] = useState('');
   const [enviandoMensagem, setEnviandoMensagem] = useState(false);
   const mensagensEndRef = useRef<HTMLDivElement>(null);
+  // Quantidade de mensagens da oficina já vistas (para apitar em novas)
+  const oficinaCountRef = useRef<number | null>(null);
 
   // Notificações (Web Push)
   const [notifAtiva, setNotifAtiva] = useState(false);
@@ -237,6 +240,20 @@ export function PortalCliente() {
       const response = await fetch(`${API_URL}/mensagens/${ordemId}`);
       if (response.ok) {
         const data = await response.json();
+
+        // Apitar/avisar quando chegam novas mensagens DA OFICINA (portal aberto)
+        const totalOficina = data.filter((m: any) => m.remetente === 'oficina').length;
+        const anterior = oficinaCountRef.current;
+        if (anterior !== null && totalOficina > anterior) {
+          const ultima = [...data].reverse().find((m: any) => m.remetente === 'oficina');
+          tocarBeep();
+          notificarNavegador(
+            'RBF Motos — Mensagem da oficina',
+            ultima?.mensagem ? String(ultima.mensagem).slice(0, 90) : 'Você recebeu uma nova mensagem.',
+          );
+        }
+        oficinaCountRef.current = totalOficina;
+
         setMensagens(data);
       }
     } catch (error) {

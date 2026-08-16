@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useOficinaData } from '../hooks/useOficinaData';
 import { DatabaseStatus } from './DatabaseStatus';
 import { WhatsAppButton } from './WhatsAppButton';
@@ -31,40 +31,9 @@ export function Dashboard({ onNavigateToOrdens }: DashboardProps) {
   });
   const [mensagensNaoLidas, setMensagensNaoLidas] = useState(0);
   const [primeiraOrdemComMensagem, setPrimeiraOrdemComMensagem] = useState<string | null>(null);
-  // Contagem anterior de não lidas (null = ainda não inicializado, não notificar)
-  const naoLidasAnteriorRef = useRef<number | null>(null);
 
-  // Pedir permissão de notificação do navegador (uma vez)
-  useEffect(() => {
-    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-      Notification.requestPermission().catch(() => {});
-    }
-  }, []);
-
-  // Toca um bipe curto usando Web Audio (sem precisar de arquivo)
-  const tocarBeep = () => {
-    try {
-      const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
-      if (!Ctx) return;
-      const ctx = new Ctx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = 880;
-      gain.gain.setValueAtTime(0.001, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.36);
-      osc.onended = () => ctx.close().catch(() => {});
-    } catch (e) {
-      /* silencioso */
-    }
-  };
-
-  // Buscar mensagens não lidas
+  // Buscar mensagens não lidas (apenas para o badge; o alerta sonoro/visual
+  // é feito pelo vigia global OficinaNotificacoes, que roda em qualquer tela)
   useEffect(() => {
     const buscarMensagensNaoLidas = async () => {
       try {
@@ -96,27 +65,6 @@ export function Dashboard({ onNavigateToOrdens }: DashboardProps) {
             }
           }
         }
-
-        // Alertar (som + notificação) quando surgem novas mensagens não lidas
-        const anterior = naoLidasAnteriorRef.current;
-        if (anterior !== null && totalNaoLidas > anterior) {
-          const novas = totalNaoLidas - anterior;
-          tocarBeep();
-          if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-            try {
-              new Notification('RBF Motos — Nova mensagem', {
-                body: novas === 1
-                  ? 'Você recebeu 1 nova mensagem de um cliente.'
-                  : `Você recebeu ${novas} novas mensagens de clientes.`,
-                icon: '/file.png',
-                tag: 'rbf-mensagens-cliente',
-              });
-            } catch (e) {
-              /* silencioso */
-            }
-          }
-        }
-        naoLidasAnteriorRef.current = totalNaoLidas;
 
         setMensagensNaoLidas(totalNaoLidas);
         setPrimeiraOrdemComMensagem(primeiraOrdem);
