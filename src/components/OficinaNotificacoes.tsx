@@ -56,9 +56,9 @@ export function OficinaNotificacoes({ onAbrirMensagens }: Props) {
   if (!toast) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-[100] max-w-sm animate-slide-down">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
       <div
-        className="flex items-start gap-3 bg-blue-600 text-white rounded-xl shadow-2xl p-4 cursor-pointer hover:bg-blue-500 transition-colors"
+        className="pointer-events-auto flex items-start gap-3 bg-blue-600 text-white rounded-xl shadow-2xl p-4 max-w-sm w-full cursor-pointer hover:bg-blue-500 transition-colors animate-scale-in"
         onClick={() => {
           setToast(null);
           onAbrirMensagens?.();
