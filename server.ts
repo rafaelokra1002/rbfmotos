@@ -1,11 +1,57 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import webpush from 'web-push';
 import { prisma } from './src/lib/prisma';
 import botWhatsAppRouter from './src/api/bot-whatsapp';
 
 const app = express();
 const port = Number(process.env.PORT) || 9001;
+
+// ================= WEB PUSH (VAPID) =================
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || '';
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '';
+const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:contato@rbfmotos.com.br';
+const pushHabilitado = Boolean(VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY);
+
+if (pushHabilitado) {
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+  console.log('🔔 Web Push habilitado');
+} else {
+  console.warn('⚠️  Web Push desabilitado: defina VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY');
+}
+
+// Envia uma notificação push para todas as inscrições de uma ordem.
+// Remove inscrições expiradas (404/410) automaticamente.
+async function enviarPushOrdem(
+  ordemId: string,
+  payload: { title: string; body: string; url?: string },
+) {
+  if (!pushHabilitado) return;
+  try {
+    const inscricoes = await (prisma as any).pushSubscription.findMany({ where: { ordemId } });
+    const data = JSON.stringify(payload);
+
+    await Promise.all(
+      inscricoes.map(async (sub: any) => {
+        try {
+          await webpush.sendNotification(
+            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+            data,
+          );
+        } catch (err: any) {
+          if (err?.statusCode === 404 || err?.statusCode === 410) {
+            await (prisma as any).pushSubscription.delete({ where: { endpoint: sub.endpoint } }).catch(() => {});
+          } else {
+            console.error('Erro ao enviar push:', err?.statusCode || err?.message || err);
+          }
+        }
+      }),
+    );
+  } catch (error) {
+    console.error('Erro ao enviar push da ordem:', error);
+  }
+}
 
 // Log de performance (tempo de resposta por rota)
 app.use((req, res, next) => {
@@ -730,6 +776,12 @@ app.put('/api/ordens-servico/:id', async (req, res) => {
     console.log('ID:', req.params.id);
     console.log('Dados recebidos:', JSON.stringify(ordemServicoData, null, 2));
 
+    // Estado anterior (para detectar mudanças e notificar o cliente)
+    const ordemAntes = await prisma.ordemServico.findUnique({
+      where: { id: req.params.id },
+      select: { numero: true, status: true, valorTotal: true },
+    });
+
     // Primeiro, sincronizar itens (deleta/atualiza existentes, prepara novos)
     const novosItens = await syncItens('ordemServico', req.params.id, itens);
     console.log('Novos itens a criar:', novosItens.length);
@@ -834,6 +886,33 @@ app.put('/api/ordens-servico/:id', async (req, res) => {
     console.log('Ordem atualizada com sucesso');
     console.log('=========================================');
     res.json(ordemServico);
+
+    // Notificar o cliente (push) sobre mudanças relevantes — depois de responder
+    if (ordemServico && ordemAntes) {
+      const numero = ordemServico.numero;
+      const urlPortal = `/portal?os=${encodeURIComponent(numero)}`;
+
+      // Moto pronta para retirada
+      if (ordemServico.status === 'pronta' && ordemAntes.status !== 'pronta') {
+        void enviarPushOrdem(req.params.id, {
+          title: '✅ Sua moto está pronta!',
+          body: `A OS ${numero} está pronta para retirada.`,
+          url: urlPortal,
+        });
+      }
+      // Orçamento/valor atualizado (evita disparar junto quando ficou pronta)
+      else if (
+        typeof ordemServico.valorTotal === 'number' &&
+        typeof ordemAntes.valorTotal === 'number' &&
+        ordemServico.valorTotal !== ordemAntes.valorTotal
+      ) {
+        void enviarPushOrdem(req.params.id, {
+          title: '💰 Orçamento atualizado',
+          body: `O valor da OS ${numero} agora é R$ ${ordemServico.valorTotal.toFixed(2)}.`,
+          url: urlPortal,
+        });
+      }
+    }
   } catch (error: any) {
     console.error('Erro ao atualizar ordem de serviço:', error);
     console.error('Erro detalhado:', JSON.stringify(error, null, 2));
@@ -1642,6 +1721,20 @@ app.post('/api/mensagens', async (req, res) => {
     });
 
     res.json(novaMensagem);
+
+    // Se a oficina respondeu, notifica o cliente por push
+    if (remetente === 'oficina') {
+      const ordem = await prisma.ordemServico.findUnique({
+        where: { id: ordemId },
+        select: { numero: true },
+      });
+      const numero = ordem?.numero || '';
+      void enviarPushOrdem(ordemId, {
+        title: '💬 Nova mensagem da oficina',
+        body: mensagem.trim().slice(0, 120),
+        url: `/portal?os=${encodeURIComponent(numero)}`,
+      });
+    }
   } catch (error) {
     console.error('Erro ao criar mensagem:', error);
     res.status(500).json({ error: 'Erro ao criar mensagem' });
@@ -1659,6 +1752,40 @@ app.patch('/api/mensagens/:ordemId/marcar-lidas', async (req, res) => {
   } catch (error) {
     console.error('Erro ao marcar mensagens como lidas:', error);
     res.status(500).json({ error: 'Erro ao marcar mensagens como lidas' });
+  }
+});
+
+// ================= WEB PUSH (INSCRIÇÕES) =================
+
+// Chave pública VAPID para o frontend se inscrever
+app.get('/api/push/vapid-public-key', (_req, res) => {
+  res.json({ publicKey: VAPID_PUBLIC_KEY, habilitado: pushHabilitado });
+});
+
+// Registrar/atualizar a inscrição de push de um cliente para uma ordem
+app.post('/api/push/subscribe', async (req, res) => {
+  try {
+    const { ordemId, subscription } = req.body;
+
+    if (!ordemId || !subscription?.endpoint || !subscription?.keys?.p256dh || !subscription?.keys?.auth) {
+      return res.status(400).json({ error: 'Dados de inscrição inválidos' });
+    }
+
+    await (prisma as any).pushSubscription.upsert({
+      where: { endpoint: subscription.endpoint },
+      update: { ordemId, p256dh: subscription.keys.p256dh, auth: subscription.keys.auth },
+      create: {
+        ordemId,
+        endpoint: subscription.endpoint,
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth,
+      },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Erro ao registrar inscrição de push:', error);
+    res.status(500).json({ error: 'Erro ao registrar inscrição de push' });
   }
 });
 

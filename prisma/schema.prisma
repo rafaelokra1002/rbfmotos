@@ -412,6 +412,20 @@ model Mensagem {
   @@map("mensagens")
 }
 
+// ============ WEB PUSH (NOTIFICAÇÕES DO PORTAL) ============
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  ordemId   String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  criadoEm  DateTime @default(now())
+
+  @@index([ordemId])
+  @@map("push_subscriptions")
+}
+
 // ============ LISTA DE PEDIDOS (COMPRAS) ============
 
 model ItemPedido {

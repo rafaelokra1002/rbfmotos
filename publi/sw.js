@@ -5,7 +5,7 @@
  *    cache usado apenas quando offline
  *  - Outras origens (API em outra porta, CDNs): ignora (deixa o navegador tratar)
  */
-const CACHE_VERSION = 'rbf-v2';
+const CACHE_VERSION = 'rbf-v3';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const OFFLINE_URL = '/';
 
@@ -31,6 +31,39 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting();
+});
+
+// ===== WEB PUSH: notificações do portal do cliente =====
+self.addEventListener('push', (event) => {
+  let data = { title: 'RBF Motos', body: 'Você tem uma nova atualização.', url: '/portal' };
+  try {
+    if (event.data) data = { ...data, ...event.data.json() };
+  } catch (e) {
+    if (event.data) data.body = event.data.text();
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/file.png',
+      badge: '/file.png',
+      data: { url: data.url || '/portal' },
+      vibrate: [100, 50, 100],
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const alvo = (event.notification.data && event.notification.data.url) || '/portal';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes('/portal') && 'focus' in client) return client.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(alvo);
+    }),
+  );
 });
 
 self.addEventListener('fetch', (event) => {

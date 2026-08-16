@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, Lock, Bike, Wrench, Clock, DollarSign, FileText, CheckCircle, AlertCircle, XCircle, X, ZoomIn, MessageCircle, Send } from 'lucide-react';
+import { Search, Lock, Bike, Wrench, Clock, DollarSign, FileText, CheckCircle, AlertCircle, XCircle, X, ZoomIn, MessageCircle, Send, Bell, BellRing } from 'lucide-react';
 import { useOficinaData } from '../hooks/useOficinaData';
+import { inscreverPushOrdem, pushSuportado } from '../lib/push';
 
 interface Mensagem {
   id: string;
@@ -58,6 +59,17 @@ export function PortalCliente() {
   const [novaMensagem, setNovaMensagem] = useState('');
   const [enviandoMensagem, setEnviandoMensagem] = useState(false);
   const mensagensEndRef = useRef<HTMLDivElement>(null);
+
+  // Notificações (Web Push)
+  const [notifAtiva, setNotifAtiva] = useState(false);
+
+  const ativarNotificacoes = async (ordemId: string) => {
+    const ok = await inscreverPushOrdem(ordemId);
+    setNotifAtiva(ok);
+    if (!ok && typeof Notification !== 'undefined' && Notification.permission === 'denied') {
+      alert('As notificações estão bloqueadas no navegador. Habilite-as nas configurações do site para receber avisos.');
+    }
+  };
 
   // Auto-scroll quando novas mensagens chegarem
   useEffect(() => {
@@ -157,6 +169,12 @@ export function PortalCliente() {
 
     // Carregar mensagens da ordem
     carregarMensagens(ordemProcessada.id);
+
+    // Se o cliente já autorizou notificações, renova a inscrição para esta OS
+    // (associa o dispositivo a esta ordem, sem forçar novo prompt)
+    if (pushSuportado() && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      ativarNotificacoes(ordem.id);
+    }
 
     // A listagem de ordens é carregada sem fotos (por performance).
     // Buscar a ordem completa sob demanda para exibir as fotos no portal.
@@ -599,12 +617,31 @@ export function PortalCliente() {
         {/* Chat com a Oficina */}
         {['aberta', 'em_andamento', 'aguardando_peca'].includes(ordemAtual.status) && (
           <div className="bg-slate-800 rounded-2xl shadow-lg border border-slate-700/50 p-4 sm:p-6 animate-slide-up" style={{ animationDelay: '0.5s' }}>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-100 mb-4 sm:mb-5 flex items-center gap-2 sm:gap-3">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-400 p-2 sm:p-3 rounded-xl shadow-lg">
-                <MessageCircle className="text-white w-5 h-5 sm:w-6 sm:h-6" />
-              </div>
-              Chat com a Oficina
-            </h2>
+            <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-100 flex items-center gap-2 sm:gap-3">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-400 p-2 sm:p-3 rounded-xl shadow-lg">
+                  <MessageCircle className="text-white w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                Chat com a Oficina
+              </h2>
+
+              {pushSuportado() && (
+                notifAtiva ? (
+                  <span className="flex items-center gap-1.5 text-xs sm:text-sm text-emerald-400 font-medium shrink-0">
+                    <BellRing className="w-4 h-4" />
+                    Avisos ativos
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => ordemAtual && ativarNotificacoes(ordemAtual.id)}
+                    className="flex items-center gap-1.5 text-xs sm:text-sm bg-slate-700 hover:bg-slate-600 text-slate-100 font-medium px-3 py-1.5 rounded-lg transition-colors shrink-0"
+                  >
+                    <Bell className="w-4 h-4" />
+                    Ativar avisos
+                  </button>
+                )
+              )}
+            </div>
 
             {/* Área de Mensagens */}
             <div className="bg-slate-900 rounded-xl p-4 mb-4 h-64 sm:h-80 overflow-y-auto space-y-3">
