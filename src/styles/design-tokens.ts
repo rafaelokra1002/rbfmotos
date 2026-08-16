@@ -87,7 +87,7 @@ export const designTokens = {
   // ============================================
   typography: {
     fontFamily: {
-      sans: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      sans: '"Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       mono: '"Fira Code", "Courier New", monospace',
     },
     
